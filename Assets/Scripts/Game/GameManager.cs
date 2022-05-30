@@ -11,32 +11,18 @@ namespace Connect4.Game
         Player2 = 1
     }
 
+    [RequireComponent(typeof(GameBoard))]
     public class GameManager : MonoBehaviour
     {
-        public UnityEvent<PlayOutput> OnPlayTurn;
-        public UnityEvent OnEndGame;
         public List<PlayOutput> Plays { get; private set; } = new List<PlayOutput>();
-        public PlayOutput LastPlay => this.Plays.Count > 0 ? this.Plays[this.Plays.Count - 1] : null;
-        public PlayerId CurrentPlayerId => (PlayerId)this._currentPlayerId;
+        public PlayerId CurrentPlayerId { get; private set; } = PlayerId.Player1;
 
-        [SerializeField] private GameBoard _gameBoard;
-        [SerializeField] private IPlayer[] _players = new IPlayer[2];
-        private int _currentPlayerId = (int)PlayerId.Player1;
-        private bool _gameIsRunning = false;
+        public PlayOutput LastPlay => this.Plays.Count > 0 ? this.Plays[this.Plays.Count - 1] : null;
+        private GameBoard _gameBoard;
 
         private void Awake()
         {
-            if (this._gameBoard == null)
-                Debug.Assert(this.TryGetComponent(out this._gameBoard));
-        }
-
-        private void OnValidate()
-        {
-            if (this._players.Length != 2)
-            {
-                Debug.LogWarning("There must be exactly 2 players");
-                Array.Resize(ref this._players, 2);
-            }
+            Debug.Assert(this.TryGetComponent(out this._gameBoard));
         }
 
         private bool TryGetWinner(out PlayerId? winner)
@@ -76,28 +62,10 @@ namespace Connect4.Game
             return false;
         }
 
-        public bool StartGame(out PlayerId? winner)
-        {
-            winner = null;
-            this._gameIsRunning = true;
-            while (this._gameIsRunning)
-            {
-                this.PlayNextTurn();
-                if (this.TryGetWinner(out winner))
-                    return true;
-            }
-            return false;
-        }
-
-        private void EndGame()
-        {
-            this.OnEndGame?.Invoke();
-        }
-
         private bool GetFirstAvailableRow(int col, out int row)
         {
             for (row = 0; row < this._gameBoard.Size.y; ++row)
-                if (this._gameBoard[row, col] == GameBoard.CellState.Empty)
+                if (!this._gameBoard[row, col].HasValue)
                     return true;
             return false;
         }
@@ -107,9 +75,9 @@ namespace Connect4.Game
             playOutput = null;
             if (playInput.column < 0 || playInput.column >= this._gameBoard.Size.x)
                 return false;
-            if (this.GetFirstAvailableRow(playInput.column, out int row))
+            if (!this.GetFirstAvailableRow(playInput.column, out int row))
                 return false;
-            if (this._gameBoard[row, playInput.column] != GameBoard.CellState.Empty)
+            if (this._gameBoard[row, playInput.column].HasValue)
                 return false;
             playOutput = new PlayOutput
             {
@@ -120,16 +88,22 @@ namespace Connect4.Game
             return true;
         }
 
-        private void PlayNextTurn()
+        /// <summary>
+        /// Plays a turn based on player input if valid and checks
+        /// if the turn won the game.
+        /// </summary>
+        /// <param name="play">Player input</param>
+        /// <param name="winner">Winner player id if the turn won the game</param>
+        /// <returns>True if the game was won, false otherwise</returns>
+        /// <exception cref="Exception">Thrown if player input is invalid</exception>
+        public bool PlayTurn(PlayInput play, out PlayerId? winner)
         {
-            PlayInput newPlay = this._players[this._currentPlayerId].PlayTurn(this.LastPlay);
-            if (this.ValidatePlay(newPlay, out PlayOutput playOutput))
-            {
-                Debug.LogWarning($"Invalid play (column {newPlay.column}), aborting game");
-                this.EndGame();
-            }
+            if (!this.ValidatePlay(play, out PlayOutput playOutput))
+                throw new Exception($"Invalid play (column {play.column})");
+            this._gameBoard[playOutput.y, playOutput.x] = this.CurrentPlayerId;
             this.Plays.Add(playOutput);
-            this.OnPlayTurn?.Invoke(playOutput);
+            this.CurrentPlayerId = (PlayerId)(((int)this.CurrentPlayerId + 1) % 2);
+            return this.TryGetWinner(out winner);
         }
     }
 }

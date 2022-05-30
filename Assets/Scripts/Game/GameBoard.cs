@@ -5,30 +5,28 @@ namespace Connect4.Game
 {
     public class GameBoard : MonoBehaviour
     {
-        public enum CellState
-        {
-            Empty,
-            Player1,
-            Player2
-        }
-
         readonly public Vector2Int Size = new Vector2Int(7, 6);
-        private CellState[] _cells;
+        private PlayerId?[] _cells;
 
         private void Awake()
         {
-            this._cells = Enumerable.Repeat(CellState.Empty, this.Size.x * this.Size.y).ToArray();
+            this._cells = Enumerable.Repeat<PlayerId?>(null, this.Size.x * this.Size.y).ToArray();
         }
 
-        private ref CellState GetCellState(int row, int column)
+        private ref PlayerId? GetCellOwner(int row, int column)
         {
             return ref this._cells[row * this.Size.y + column];
         }
 
-        public CellState this[int row, int column]
+        public PlayerId? this[int row, int column]
         {
-            get { return this.GetCellState(row, column); }
-            set { this.GetCellState(row, column) = value; }
+            get
+            {
+                if (row < 0 || row >= this.Size.y || column < 0 || column >= this.Size.x)
+                    return null;
+                return this.GetCellOwner(row, column);
+            }
+            set { this.GetCellOwner(row, column) = value; }
         }
     }
 }

@@ -3,10 +3,10 @@ using Connect4.Game;
 
 namespace Connect4.UI
 {
-    public class StartMenuController : MonoBehaviour
+    public class UIController : MonoBehaviour
     {
         [SerializeField] private GameController _gameController;
-        [SerializeField] private StartOptionsViewModel _vm;
+        [SerializeField] private GameObject _startMenu;
 
         private IPlayer[] CreatePlayers()
         {
@@ -21,8 +21,16 @@ namespace Connect4.UI
             IPlayer[] players = this.CreatePlayers();
             this._gameController.Player1 = players[0];
             this._gameController.Player2 = players[1];
-            this.gameObject.SetActive(false);
             this._gameController.StartGame();
+            this._startMenu.SetActive(false);
+        }
+
+        public void OnEndGame(PlayerId? winner)
+        {
+            if (!winner.HasValue)
+                Debug.Log("Game was interrupted");
+            else
+                Debug.Log($"Player {winner.Value} won!");
         }
     }
 }

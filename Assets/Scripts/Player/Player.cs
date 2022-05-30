@@ -1,10 +1,14 @@
+using System;
+using System.Collections;
+
 namespace Connect4
 {
     public class Player : IPlayer
     {
-        public PlayInput PlayTurn(PlayOutput lastPlay)
+        public IEnumerator PlayTurn(PlayOutput lastPlay, Action<PlayInput> callback)
         {
-            return new PlayInput { column = 0 };
+            callback(new PlayInput { column = 0 });
+            yield return null;
         }
     }
 }

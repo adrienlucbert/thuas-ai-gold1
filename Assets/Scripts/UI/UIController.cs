@@ -6,15 +6,28 @@ namespace Connect4.UI
 {
     public class UIController : MonoBehaviour
     {
+        [SerializeField] private StartOptionsViewModel _startOptionsViewModel;
         [SerializeField] private GameController _gameController;
         [SerializeField] private GameObject _startMenu;
         [SerializeField] private GameObject _endScreen;
 
+        private APlayer CreatePlayer(PlayerId Id, string type)
+        {
+            switch (type)
+            {
+                case "AI":
+                    return new AIPlayer { Id = PlayerId.Player1 };
+                case "Player":
+                    return new Player { Id = PlayerId.Player1 };
+            }
+            throw new System.Exception($"Unsupported player type: {type}");
+        }
+
         private APlayer[] CreatePlayers()
         {
             return new APlayer[] {
-                new Player{ Id = PlayerId.Player1 },
-                new Player{ Id = PlayerId.Player2 }
+                this.CreatePlayer(PlayerId.Player1, this._startOptionsViewModel.Player1Type),
+                this.CreatePlayer(PlayerId.Player2, this._startOptionsViewModel.Player2Type)
             };
         }
 
@@ -36,14 +49,17 @@ namespace Connect4.UI
         public void OnEndGame(PlayerId? winner)
         {
             this._endScreen.SetActive(true);
+            GameObject winnerText = this._endScreen.transform.Find("Winner").gameObject;
+            GameObject interruptionText = this._endScreen.transform.Find("Interruption").gameObject;
             if (!winner.HasValue)
             {
-                this._endScreen.transform.Find("Interruption").gameObject.SetActive(true);
+                winnerText.SetActive(false);
+                interruptionText.SetActive(true);
             }
             else
             {
-                GameObject winnerText = this._endScreen.transform.Find("Winner").gameObject;
-                winnerText.gameObject.SetActive(true);
+                interruptionText.SetActive(false);
+                winnerText.SetActive(true);
                 winnerText.GetComponent<Text>().text = $"{winner.Value} won!";
             }
         }

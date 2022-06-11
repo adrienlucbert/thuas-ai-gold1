@@ -2876,6 +2876,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5850182cb56701544b865311ad732cfb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _startOptionsViewModel: {fileID: 1873869764}
   _gameController: {fileID: 376699432}
   _startMenu: {fileID: 1873869762}
   _endScreen: {fileID: 613924672}

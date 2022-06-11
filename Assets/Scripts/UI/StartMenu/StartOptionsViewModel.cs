@@ -1,5 +1,3 @@
-using UnityEngine;
-using UnityEngine.UI;
 using UnityWeld.Binding;
 
 [Binding]

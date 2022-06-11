@@ -69,7 +69,6 @@ namespace Connect4.Game
 
         private bool GetFirstAvailableRow(int col, out int row)
         {
-            string value = !this._gameBoard[0, 6].HasValue ? "NULL" : this._gameBoard[0, 6].ToString();
             for (row = 0; row < this._gameBoard.Size.y; ++row)
             {
                 if (!this._gameBoard[row, col].HasValue)

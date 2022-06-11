@@ -5,10 +5,9 @@ using UnityEngine.Events;
 
 namespace Connect4.Game
 {
-    [RequireComponent(typeof(GameManager))]
     public class GameController : MonoBehaviour
     {
-        public UnityEvent OnStartGame;
+        public UnityEvent<GameBoard> OnStartGame;
         public UnityEvent<PlayOutput> OnPlayTurn;
         public UnityEvent<PlayerId?> OnEndGame;
 
@@ -19,11 +18,6 @@ namespace Connect4.Game
 
         private bool _gameIsRunning = false;
         private GameManager _gameManager;
-
-        public void Awake()
-        {
-            Debug.Assert(this.TryGetComponent(out this._gameManager));
-        }
 
         private IEnumerator RunGame()
         {
@@ -41,9 +35,11 @@ namespace Connect4.Game
         {
             Debug.Assert(this.Player1 != null, "Player 1 must be assigned a value");
             Debug.Assert(this.Player2 != null, "Player 2 must be assigned a value");
+            GameBoard board = new GameBoard();
+            this._gameManager = new GameManager(board);
             this.Winner = null;
             this._gameIsRunning = true;
-            this.OnStartGame?.Invoke();
+            this.OnStartGame?.Invoke(board);
             StartCoroutine(this.RunGame());
         }
 
@@ -63,7 +59,7 @@ namespace Connect4.Game
             {
                 try
                 {
-                    bool isWon = this._gameManager.PlayTurn(nextPlay, out this.Winner);
+                    this._gameManager.PlayTurn(nextPlay, out this.Winner);
                     this.OnPlayTurn?.Invoke(this._gameManager.LastPlay);
                 }
                 catch (Exception e)

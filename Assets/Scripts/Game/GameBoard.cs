@@ -3,14 +3,15 @@ using UnityEngine;
 
 namespace Connect4.Game
 {
-    public class GameBoard : MonoBehaviour
+    public class GameBoard
     {
-        readonly public Vector2Int Size = new Vector2Int(7, 6);
+        public Vector2Int Size { get; private set; }
         private PlayerId?[] _cells;
 
-        public void OnGameStart()
+        public GameBoard(int columns = 7, int rows = 6)
         {
-            this._cells = Enumerable.Repeat<PlayerId?>(null, this.Size.x * this.Size.y).ToArray();
+            this.Size = new Vector2Int(columns, rows);
+            this._cells = Enumerable.Repeat<PlayerId?>(null, columns * rows).ToArray();
         }
 
         private ref PlayerId? GetCellOwner(int row, int column)

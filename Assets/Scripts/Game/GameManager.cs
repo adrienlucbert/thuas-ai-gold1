@@ -10,8 +10,7 @@ namespace Connect4.Game
         Player2 = 1
     }
 
-    [RequireComponent(typeof(GameBoard))]
-    public class GameManager : MonoBehaviour
+    public class GameManager
     {
         public List<PlayOutput> Plays { get; private set; }
         public PlayerId CurrentPlayerId { get; private set; }
@@ -19,13 +18,9 @@ namespace Connect4.Game
         public PlayOutput LastPlay => this.Plays.Count > 0 ? this.Plays[this.Plays.Count - 1] : null;
         private GameBoard _gameBoard;
 
-        private void Awake()
+        public GameManager(GameBoard board)
         {
-            Debug.Assert(this.TryGetComponent(out this._gameBoard));
-        }
-
-        public void OnGameStart()
-        {
+            this._gameBoard = board;
             this.Plays = new List<PlayOutput>();
             this.CurrentPlayerId = PlayerId.Player1;
         }
@@ -67,7 +62,7 @@ namespace Connect4.Game
             return false;
         }
 
-        private bool GetFirstAvailableRow(int col, out int row)
+        public bool GetFirstAvailableRow(int col, out int row)
         {
             for (row = 0; row < this._gameBoard.Size.y; ++row)
             {

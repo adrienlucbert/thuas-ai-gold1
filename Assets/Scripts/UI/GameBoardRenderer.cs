@@ -6,7 +6,6 @@ using Connect4.Game;
 
 namespace Connect4.UI
 {
-    [RequireComponent(typeof(GameBoard))]
     public class GameBoardRenderer : MonoBehaviour
     {
         [SerializeField] private GameObject _emptyTilePrefab;
@@ -17,13 +16,9 @@ namespace Connect4.UI
         private GameObject _controls;
         private GameBoard _gameBoard;
 
-        private void Awake()
+        public void OnStartGame(GameBoard board)
         {
-            Debug.Assert(this.TryGetComponent(out this._gameBoard));
-        }
-
-        public void OnGameStart()
-        {
+            this._gameBoard = board;
             this.ClearBoard();
             this.DrawBoard();
         }

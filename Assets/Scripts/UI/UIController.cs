@@ -16,9 +16,9 @@ namespace Connect4.UI
             switch (type)
             {
                 case "AI":
-                    return new AIPlayer { Id = PlayerId.Player1 };
+                    return new AIPlayer { Id = Id };
                 case "Player":
-                    return new Player { Id = PlayerId.Player1 };
+                    return new Player { Id = Id };
             }
             throw new System.Exception($"Unsupported player type: {type}");
         }

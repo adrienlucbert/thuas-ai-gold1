@@ -8,17 +8,17 @@ namespace Connect4.UI
         [SerializeField] private GameController _gameController;
         [SerializeField] private GameObject _startMenu;
 
-        private IPlayer[] CreatePlayers()
+        private APlayer[] CreatePlayers()
         {
-            return new IPlayer[] {
-                new Player(),
-                new Player()
+            return new APlayer[] {
+                new Player{ Id = PlayerId.Player1 },
+                new Player{ Id = PlayerId.Player2 }
             };
         }
 
         public void StartGame()
         {
-            IPlayer[] players = this.CreatePlayers();
+            APlayer[] players = this.CreatePlayers();
             this._gameController.Player1 = players[0];
             this._gameController.Player2 = players[1];
             this._gameController.StartGame();

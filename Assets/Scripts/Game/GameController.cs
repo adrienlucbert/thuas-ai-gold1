@@ -11,12 +11,11 @@ namespace Connect4.Game
         public UnityEvent<PlayOutput> OnPlayTurn;
         public UnityEvent<PlayerId?> OnEndGame;
 
-        public IPlayer Player1;
-        public IPlayer Player2;
-        public IPlayer[] Players => new IPlayer[] { this.Player1, this.Player2 };
+        public APlayer Player1;
+        public APlayer Player2;
+        public APlayer[] Players => new APlayer[] { this.Player1, this.Player2 };
         public PlayerId? winner;
 
-        private int _currentPlayerId = (int)PlayerId.Player1;
         private bool _gameIsRunning = false;
         private GameManager _gameManager;
 
@@ -27,14 +26,10 @@ namespace Connect4.Game
 
         private IEnumerator RunGame()
         {
-            while (this._gameIsRunning)
+            while (this._gameIsRunning && !this.winner.HasValue)
             {
+                Debug.Log(this._gameIsRunning);
                 yield return StartCoroutine(this.PlayNextTurn());
-                if (this.winner.HasValue)
-                {
-                    this.EndGame();
-                    yield return null;
-                }
             }
             this.EndGame();
             yield return null;
@@ -63,12 +58,14 @@ namespace Connect4.Game
 
         private IEnumerator PlayNextTurn()
         {
-            yield return this.Players[this._currentPlayerId].PlayTurn(this._gameManager.LastPlay, nextPlay =>
+            yield return this.Players[(int)this._gameManager.CurrentPlayerId].PlayTurn(this._gameManager.LastPlay, nextPlay =>
             {
                 try
                 {
                     bool isWon = this._gameManager.PlayTurn(nextPlay, out this.winner);
                     this.OnPlayTurn?.Invoke(this._gameManager.LastPlay);
+                    if (isWon)
+                        Debug.Log($"WINNER {this.winner.Value}");
                 }
                 catch (Exception e)
                 {

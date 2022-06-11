@@ -1,4 +1,7 @@
+using System;
+using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 using Connect4.Game;
 
 namespace Connect4.UI
@@ -8,13 +11,18 @@ namespace Connect4.UI
     {
         [SerializeField] private GameObject _emptyTilePrefab;
         [SerializeField] private GameObject _player1TilePrefab;
+        [SerializeField] private GameObject _player1PlayButtonPrefab;
         [SerializeField] private GameObject _player2TilePrefab;
+        [SerializeField] private GameObject _player2PlayButtonPrefab;
+        private GameObject _controls;
         private GameBoard _gameBoard;
 
         private void Awake()
         {
             Debug.Assert(this.TryGetComponent(out this._gameBoard));
             this.DrawBoard();
+            this._controls = Instantiate(new GameObject(), this.transform);
+            this._controls.name = "Controls";
         }
 
         private GameObject GetCellPrefab(PlayerId? owner)
@@ -29,6 +37,18 @@ namespace Connect4.UI
                     return this._player2TilePrefab;
             }
             throw new System.Exception($"Unsupported cell owner: {owner}");
+        }
+
+        private GameObject GetPlayButtonPrefab(PlayerId player)
+        {
+            switch (player)
+            {
+                case PlayerId.Player1:
+                    return this._player1PlayButtonPrefab;
+                case PlayerId.Player2:
+                    return this._player2PlayButtonPrefab;
+            }
+            throw new System.Exception($"Unsupported player id: {player}");
         }
 
         private void CreateCell(int x, int y, PlayerId? owner)
@@ -51,6 +71,31 @@ namespace Connect4.UI
             for (int row = 0; row < this._gameBoard.Size.y; ++row)
                 for (int col = 0; col < this._gameBoard.Size.x; ++col)
                     this.CreateCell(col, row, this._gameBoard[row, col]);
+        }
+
+        private void ClearControls()
+        {
+            for (int i = this._controls.transform.childCount; i > 0; --i)
+                DestroyImmediate(this._controls.transform.GetChild(0).gameObject);
+        }
+
+        public IEnumerator ShowControls(PlayerId currentPlayer, Action<PlayInput> onPlayCallback)
+        {
+            GameObject prefab = this.GetPlayButtonPrefab(currentPlayer);
+            this.ClearControls();
+            for (int col = 0; col < this._gameBoard.Size.x; ++col)
+            {
+                if (this._gameBoard[this._gameBoard.Size.y - 1, col].HasValue)
+                    continue;
+                PlayInput play = new PlayInput { column = col };
+                GameObject button = Instantiate(prefab, new Vector3(col, this._gameBoard.Size.y, 0), Quaternion.identity, this._controls.transform);
+                button.GetComponentInChildren<MouseClickHandler>().onMouseClick.AddListener(() =>
+                {
+                    this.ClearControls();
+                    onPlayCallback(play);
+                });
+            }
+            yield return new WaitForEndOfFrame();
         }
 
         public void OnPlayTurn(PlayOutput lastPlay)

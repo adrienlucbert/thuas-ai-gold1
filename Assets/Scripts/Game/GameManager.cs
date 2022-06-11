@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events;
 
 namespace Connect4.Game
 {
@@ -36,11 +35,11 @@ namespace Connect4.Game
                 new Tuple<Vector2Int, Vector2Int>(new Vector2Int(-1,  0), new Vector2Int( 1,  0)), // horizontal
                 new Tuple<Vector2Int, Vector2Int>(new Vector2Int( 0, -1), new Vector2Int( 0,  1)), // vertical
                 new Tuple<Vector2Int, Vector2Int>(new Vector2Int(-1, -1), new Vector2Int( 1,  1)), // right diagonal
-                new Tuple<Vector2Int, Vector2Int>(new Vector2Int( 1,  1), new Vector2Int(-1, -1))  // left diagonal
+                new Tuple<Vector2Int, Vector2Int>(new Vector2Int(-1,  1), new Vector2Int( 1, -1))  // left diagonal
             };
             foreach (var direction in directions)
             {
-                int alignedCells = 0;
+                int alignedCells = 1;
                 Vector2Int pos = new Vector2Int(lastPlay.x, lastPlay.y) + direction.Item1;
                 while (this._gameBoard[pos.y, pos.x] == this._gameBoard[lastPlay.y, lastPlay.x])
                 {
@@ -64,9 +63,12 @@ namespace Connect4.Game
 
         private bool GetFirstAvailableRow(int col, out int row)
         {
+            string value = !this._gameBoard[0, 6].HasValue ? "NULL" : this._gameBoard[0, 6].ToString();
             for (row = 0; row < this._gameBoard.Size.y; ++row)
+            {
                 if (!this._gameBoard[row, col].HasValue)
                     return true;
+            }
             return false;
         }
 

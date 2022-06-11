@@ -605,7 +605,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _emptyTilePrefab: {fileID: 6920386675422597464, guid: a692f0f7ad335264db03aa3f94ed7716, type: 3}
   _player1TilePrefab: {fileID: 6920386675422597464, guid: a653a0d719cfa36478ddf890d169d2e5, type: 3}
+  _player1PlayButtonPrefab: {fileID: 1612637217041773236, guid: 901811de0e8d4364ca4fe9d2e3bab52a, type: 3}
   _player2TilePrefab: {fileID: 6920386675422597464, guid: 7ea174a2a110d0f46935fd4a9e70ccfb, type: 3}
+  _player2PlayButtonPrefab: {fileID: 2885022161665211691, guid: 7fe3fac4dc9ae034d91212648d6c12b3, type: 3}
 --- !u!114 &376699430
 MonoBehaviour:
   m_ObjectHideFlags: 0

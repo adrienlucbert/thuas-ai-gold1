@@ -15,7 +15,7 @@ namespace Connect4.Game
 
         private ref PlayerId? GetCellOwner(int row, int column)
         {
-            return ref this._cells[row * this.Size.y + column];
+            return ref this._cells[row * this.Size.x + column];
         }
 
         public PlayerId? this[int row, int column]

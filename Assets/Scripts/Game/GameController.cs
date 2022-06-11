@@ -8,13 +8,14 @@ namespace Connect4.Game
     [RequireComponent(typeof(GameManager))]
     public class GameController : MonoBehaviour
     {
+        public UnityEvent OnStartGame;
         public UnityEvent<PlayOutput> OnPlayTurn;
         public UnityEvent<PlayerId?> OnEndGame;
 
         public APlayer Player1;
         public APlayer Player2;
         public APlayer[] Players => new APlayer[] { this.Player1, this.Player2 };
-        public PlayerId? winner;
+        public PlayerId? Winner;
 
         private bool _gameIsRunning = false;
         private GameManager _gameManager;
@@ -26,13 +27,11 @@ namespace Connect4.Game
 
         private IEnumerator RunGame()
         {
-            while (this._gameIsRunning && !this.winner.HasValue)
+            while (this._gameIsRunning && !this.Winner.HasValue)
             {
-                Debug.Log(this._gameIsRunning);
                 yield return StartCoroutine(this.PlayNextTurn());
             }
             this.EndGame();
-            yield return null;
         }
 
         /// <summary>
@@ -42,13 +41,15 @@ namespace Connect4.Game
         {
             Debug.Assert(this.Player1 != null, "Player 1 must be assigned a value");
             Debug.Assert(this.Player2 != null, "Player 2 must be assigned a value");
+            this.Winner = null;
             this._gameIsRunning = true;
+            this.OnStartGame?.Invoke();
             StartCoroutine(this.RunGame());
         }
 
         private void EndGame()
         {
-            this.OnEndGame?.Invoke(this.winner);
+            this.OnEndGame?.Invoke(this.Winner);
         }
 
         private void InterruptGame()
@@ -62,10 +63,8 @@ namespace Connect4.Game
             {
                 try
                 {
-                    bool isWon = this._gameManager.PlayTurn(nextPlay, out this.winner);
+                    bool isWon = this._gameManager.PlayTurn(nextPlay, out this.Winner);
                     this.OnPlayTurn?.Invoke(this._gameManager.LastPlay);
-                    if (isWon)
-                        Debug.Log($"WINNER {this.winner.Value}");
                 }
                 catch (Exception e)
                 {

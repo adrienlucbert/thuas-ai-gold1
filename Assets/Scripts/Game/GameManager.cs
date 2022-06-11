@@ -13,8 +13,8 @@ namespace Connect4.Game
     [RequireComponent(typeof(GameBoard))]
     public class GameManager : MonoBehaviour
     {
-        public List<PlayOutput> Plays { get; private set; } = new List<PlayOutput>();
-        public PlayerId CurrentPlayerId { get; private set; } = PlayerId.Player1;
+        public List<PlayOutput> Plays { get; private set; }
+        public PlayerId CurrentPlayerId { get; private set; }
 
         public PlayOutput LastPlay => this.Plays.Count > 0 ? this.Plays[this.Plays.Count - 1] : null;
         private GameBoard _gameBoard;
@@ -22,6 +22,12 @@ namespace Connect4.Game
         private void Awake()
         {
             Debug.Assert(this.TryGetComponent(out this._gameBoard));
+        }
+
+        public void OnGameStart()
+        {
+            this.Plays = new List<PlayOutput>();
+            this.CurrentPlayerId = PlayerId.Player1;
         }
 
         private bool TryGetWinner(out PlayerId? winner)

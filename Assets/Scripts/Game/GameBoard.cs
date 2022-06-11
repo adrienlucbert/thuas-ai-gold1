@@ -8,7 +8,7 @@ namespace Connect4.Game
         readonly public Vector2Int Size = new Vector2Int(7, 6);
         private PlayerId?[] _cells;
 
-        private void Awake()
+        public void OnGameStart()
         {
             this._cells = Enumerable.Repeat<PlayerId?>(null, this.Size.x * this.Size.y).ToArray();
         }

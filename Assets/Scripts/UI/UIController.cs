@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using Connect4.Game;
 
 namespace Connect4.UI
@@ -7,6 +8,7 @@ namespace Connect4.UI
     {
         [SerializeField] private GameController _gameController;
         [SerializeField] private GameObject _startMenu;
+        [SerializeField] private GameObject _endScreen;
 
         private APlayer[] CreatePlayers()
         {
@@ -14,6 +16,12 @@ namespace Connect4.UI
                 new Player{ Id = PlayerId.Player1 },
                 new Player{ Id = PlayerId.Player2 }
             };
+        }
+
+        public void Restart()
+        {
+            this._endScreen.SetActive(false);
+            this._startMenu.SetActive(true);
         }
 
         public void StartGame()
@@ -27,10 +35,17 @@ namespace Connect4.UI
 
         public void OnEndGame(PlayerId? winner)
         {
+            this._endScreen.SetActive(true);
             if (!winner.HasValue)
-                Debug.Log("Game was interrupted");
+            {
+                this._endScreen.transform.Find("Interruption").gameObject.SetActive(true);
+            }
             else
-                Debug.Log($"Player {winner.Value} won!");
+            {
+                GameObject winnerText = this._endScreen.transform.Find("Winner").gameObject;
+                winnerText.gameObject.SetActive(true);
+                winnerText.GetComponent<Text>().text = $"{winner.Value} won!";
+            }
         }
     }
 }

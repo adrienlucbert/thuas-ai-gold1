@@ -20,9 +20,12 @@ namespace Connect4.UI
         private void Awake()
         {
             Debug.Assert(this.TryGetComponent(out this._gameBoard));
+        }
+
+        public void OnGameStart()
+        {
+            this.ClearBoard();
             this.DrawBoard();
-            this._controls = Instantiate(new GameObject(), this.transform);
-            this._controls.name = "Controls";
         }
 
         private GameObject GetCellPrefab(PlayerId? owner)
@@ -71,6 +74,14 @@ namespace Connect4.UI
             for (int row = 0; row < this._gameBoard.Size.y; ++row)
                 for (int col = 0; col < this._gameBoard.Size.x; ++col)
                     this.CreateCell(col, row, this._gameBoard[row, col]);
+        }
+
+        private void ClearBoard()
+        {
+            for (int i = this.transform.childCount; i > 0; --i)
+                DestroyImmediate(this.transform.GetChild(0).gameObject);
+            this._controls = Instantiate(new GameObject(), this.transform);
+            this._controls.name = "Controls";
         }
 
         private void ClearControls()

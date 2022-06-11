@@ -46,21 +46,27 @@ namespace Connect4.UI
             this._startMenu.SetActive(false);
         }
 
-        public void OnEndGame(PlayerId? winner)
+        public void OnEndGame(GameState gameState, PlayerId? winner)
         {
             this._endScreen.SetActive(true);
             GameObject winnerText = this._endScreen.transform.Find("Winner").gameObject;
+            GameObject DrawText = this._endScreen.transform.Find("Draw").gameObject;
             GameObject interruptionText = this._endScreen.transform.Find("Interruption").gameObject;
-            if (!winner.HasValue)
+            winnerText.SetActive(false);
+            DrawText.SetActive(false);
+            interruptionText.SetActive(false);
+            switch (gameState)
             {
-                winnerText.SetActive(false);
-                interruptionText.SetActive(true);
-            }
-            else
-            {
-                interruptionText.SetActive(false);
-                winnerText.SetActive(true);
-                winnerText.GetComponent<Text>().text = $"{winner.Value} won!";
+                case GameState.Won:
+                    winnerText.SetActive(true);
+                    winnerText.GetComponent<Text>().text = $"{winner.Value} won!";
+                    break;
+                case GameState.Draw:
+                    DrawText.SetActive(true);
+                    break;
+                case GameState.Ongoing:
+                    interruptionText.SetActive(true);
+                    break;
             }
         }
     }

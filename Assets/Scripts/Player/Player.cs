@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 using Connect4.UI;
+using Connect4.Game;
 
 namespace Connect4
 {
@@ -9,7 +10,7 @@ namespace Connect4
     {
         private PlayInput _play;
 
-        public override IEnumerator PlayTurn(PlayOutput lastPlay, Action<PlayInput> callback)
+        public override IEnumerator PlayTurn(GameManager gameManager, PlayOutput lastPlay, Action<PlayInput> callback)
         {
             this._play = null;
             yield return this.PreparePlayUI();

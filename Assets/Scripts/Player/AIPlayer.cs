@@ -10,10 +10,11 @@ namespace Connect4
     {
         public override IEnumerator PlayTurn(GameManager gameManager, PlayOutput lastPlay, Action<PlayInput> callback)
         {
-            GameManager game = (GameManager)gameManager.Clone();
-            game.Plays = new List<PlayOutput>();
-            GameSimulation state = new GameSimulation(game);
-            PlayInput bestPlay = MiniMax.GetBestMove(state, 5);
+            //GameManager game = (GameManager)gameManager.Clone();
+            //game.Plays = new List<PlayOutput>();
+            //GameSimulation state = new GameSimulation(game);
+            //PlayInput bestPlay = MiniMax.GetBestMove(state, 5);
+            PlayInput bestPlay = MCTS.GetBestMove(new GameSimulation(gameManager));
             callback(bestPlay);
             yield return null;
         }

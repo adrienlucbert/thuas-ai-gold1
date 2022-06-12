@@ -128,7 +128,7 @@ namespace Connect4.Game
 
         public object Clone()
         {
-            GameManager clone = new GameManager((GameBoard)this.GameBoard.Clone(), this.CurrentPlayerId);
+            GameManager clone = new GameManager((GameBoard)this.GameBoard.Clone(), this.CurrentPlayerId, this._winningRow);
             clone.Plays = new List<PlayOutput>(this.Plays);
             clone.State = this.State;
             clone.Winner = this.Winner;

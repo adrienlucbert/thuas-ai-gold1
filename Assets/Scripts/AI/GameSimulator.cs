@@ -43,8 +43,23 @@ namespace Connect4.AI
         public override string ToString()
         {
             string res = $"State: {this.State}\n";
-            foreach (PlayOutput play in this._manager.Plays)
-                res += $"{play.player}: ({play.x} {play.y})\n";
+            for (int row = this._manager.GameBoard.Size.y - 1; row >= 0; --row)
+            {
+                for (int col = 0; col < this._manager.GameBoard.Size.x; ++col)
+                {
+                    string c;
+                    if (!this._manager.GameBoard[row, col].HasValue)
+                        c = "   ";
+                    else if (this._manager.GameBoard[row, col].Value == PlayerId.Player1)
+                        c = " x ";
+                    else
+                        c = " o ";
+                    if (this._manager.LastPlay.x == col && this._manager.LastPlay.y == row)
+                        c = c.ToUpper();
+                    res += c;
+                }
+                res += "\n";
+            }
             return res;
         }
     }

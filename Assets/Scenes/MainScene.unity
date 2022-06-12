@@ -896,8 +896,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  BoardSize: {x: 3, y: 3}
-  WinningCellsInARow: 3
+  BoardSize: {x: 7, y: 6}
+  WinningCellsInARow: 4
   RandomSeed: 6
 --- !u!1 &397599802
 GameObject:

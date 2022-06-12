@@ -1,80 +1,34 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 using Connect4.Game;
 
 namespace Connect4.AI
 {
     public class MCTS
     {
-        private class State
-        {
-            public GameSimulation simulation;
-
-            public PlayerId NextToMove => this.simulation.CurrentPlayerId;
-
-            public int? GameResult
-            {
-                get
-                {
-                    if (this.simulation.State == GameState.Won)
-                        return (int)this.simulation.Winner;
-                    if (this.simulation.State == GameState.Draw)
-                        return -1;
-                    return null;
-                }
-            }
-
-            public bool IsGameOver => this.simulation.State != GameState.Ongoing;
-
-            public State Move(PlayInput move)
-            {
-                return new State { simulation = this.simulation.Next(move) };
-            }
-
-            public List<PlayInput> GetLegalActions()
-            {
-                return this.simulation.GetAvailablePlays();
-            }
-        };
-
         private class Node
         {
-            public State state;
-            public Node parent;
-            public PlayInput play;
-            public List<Node> children;
-            Queue<PlayInput> untriedPlays;
-            Dictionary<int, int> results;
-            public int visits = 0;
-            public int wins => this.results[(int)this.state.NextToMove];
-            public int losses => this.results[((int)this.state.NextToMove + 1) % 2];
-            public int draws => this.results[-1];
+            public PlayInput Play;
+            public List<Node> Children { get; private set; }
+            private GameSimulation _state;
+            private Node _parent;
+            private Queue<PlayInput> _untriedPlays;
+            private Dictionary<int, int> _results;
+            private int _visits = 0;
+            private int _wins => this._results[((int)this._state.CurrentPlayerId + 1) % 2];
+            private int _losses => this._results[(int)this._state.CurrentPlayerId];
+            public float Score => (float)(this._wins - this._losses) / (float)this._visits;
+            public bool IsTerminalNode => this._state.State != GameState.Ongoing;
+            public bool IsFullyExpanded => this._untriedPlays.Count == 0;
 
-            float q
+            public Node(GameSimulation state, Node parent = null, PlayInput play = null)
             {
-                get
-                {
-                    return this.wins - this.losses;
-                }
-            }
-            float n => this.visits;
-
-            public float UCB1(float C)
-            {
-                if (this.parent == null)
-                    throw new Exception("Cannot calculate UCB1 of a root node");
-                return (this.q / this.n) + C * Mathf.Sqrt(Mathf.Log(this.parent.n) / this.n);
-            }
-
-            public Node(State state, Node parent = null, PlayInput play = null)
-            {
-                this.state = state;
-                this.parent = parent;
-                this.play = play;
-                this.children = new List<Node>();
-                this.untriedPlays = new Queue<PlayInput>(state.GetLegalActions());
-                this.results = new Dictionary<int, int>
+                this._state = state;
+                this._parent = parent;
+                this.Play = play;
+                this.Children = new List<Node>();
+                this._untriedPlays = new Queue<PlayInput>(this._state.GetAvailablePlays());
+                this._results = new Dictionary<int, int>
                 {
                     { -1, 0 },
                     { (int)PlayerId.Player1, 0 },
@@ -84,108 +38,87 @@ namespace Connect4.AI
 
             public Node Expand()
             {
-                PlayInput move = this.untriedPlays.Dequeue();
-                State nextState = this.state.Move(move);
+                PlayInput move = this._untriedPlays.Dequeue();
+                GameSimulation nextState = this._state.Next(move);
                 Node child = new Node(nextState, this, move);
-                this.children.Add(child);
+                this.Children.Add(child);
                 return child;
             }
 
-            public bool IsTerminalNode => this.state.IsGameOver;
-
             public int Rollout()
             {
-                State currentRolloutState = this.state;
-                while (!currentRolloutState.IsGameOver)
+                GameSimulation currentRolloutState = this._state;
+                while (currentRolloutState.State == GameState.Ongoing)
                 {
-                    List<PlayInput> possibleMoves = currentRolloutState.GetLegalActions();
-                    PlayInput move = this.RolloutPolicy(possibleMoves);
-                    currentRolloutState = currentRolloutState.Move(move);
+                    List<PlayInput> possibleMoves = currentRolloutState.GetAvailablePlays();
+                    PlayInput randomMove = possibleMoves[UnityEngine.Random.Range(0, possibleMoves.Count)];
+                    currentRolloutState = currentRolloutState.Next(randomMove);
                 }
-                return currentRolloutState.GameResult.Value;
+                if (this._state.State == GameState.Won)
+                    return (int)this._state.Winner;
+                return -1;
             }
 
             public void BackPropagate(int result)
             {
-                this.visits += 1;
-                this.results[result] += 1;
-                if (this.parent != null)
-                    this.parent.BackPropagate(result);
+                this._visits += 1;
+                this._results[result] += 1;
+                if (this._parent != null)
+                    this._parent.BackPropagate(result);
             }
 
-            public bool IsFullyExpanded => this.untriedPlays.Count == 0;
-
-            public Node GetBestChild(float C = 1.4f)
+            public Node GetBestChild()
             {
                 Node bestChild = null;
-                float bestUCB1 = int.MinValue;
-                foreach (Node child in this.children)
+                float bestScore = int.MinValue;
+                foreach (Node child in this.Children)
                 {
-                    float ucb1 = child.UCB1(C);
-                    if (bestChild == null || ucb1 > bestUCB1)
+                    float score = child.Score;
+                    if (bestChild == null || score > bestScore)
                     {
                         bestChild = child;
-                        bestUCB1 = ucb1;
+                        bestScore = score;
                     }
                 }
                 return bestChild;
             }
-
-            public PlayInput RolloutPolicy(List<PlayInput> possibleMoves)
-            {
-                return possibleMoves[UnityEngine.Random.Range(0, possibleMoves.Count - 1)];
-            }
-
-            public override string ToString()
-            {
-                return this.state.simulation.ToString();
-            }
         }
 
-        private Node root;
+        private Node _root;
 
         private MCTS(GameSimulation initialState)
         {
-            this.root = new Node(new State { simulation = initialState });
+            this._root = new Node(initialState);
         }
 
-        private Node TreePolicy()
+        private Node SelectNextNode()
         {
-            Node currentNode = this.root;
+            Node currentNode = this._root;
             while (!currentNode.IsTerminalNode)
             {
                 if (!currentNode.IsFullyExpanded)
                     return currentNode.Expand();
                 else
-                    currentNode = currentNode.GetBestChild();
+                    currentNode = currentNode.Children[UnityEngine.Random.Range(0, currentNode.Children.Count)];
             }
             return currentNode;
         }
 
-        private PlayInput GetBestMove(int iterations, float maxTime)
+        private PlayInput RunMCTS(int iterations, float maxTime)
         {
             DateTime endTime = DateTime.Now.AddSeconds(maxTime);
             for (int i = 0; i < iterations && DateTime.Now < endTime; ++i)
             {
-                Node nextNode = this.TreePolicy();
+                Node nextNode = this.SelectNextNode();
                 int reward = nextNode.Rollout();
                 nextNode.BackPropagate(reward);
             }
-            Node bestChild = null;
-            foreach (Node child in this.root.children)
-            {
-                if (bestChild == null || bestChild.losses / Mathf.Max(1, bestChild.wins) < child.losses / Mathf.Max(1, child.wins))
-                    bestChild = child;
-                Debug.Log($"Move: {child.play.column} Visits: {child.visits} W/L/D: {child.losses}/{child.wins}/{child.draws} ({child.losses / Mathf.Max(1, child.wins)})\n{child}");
-            }
-            Debug.Log($"Best move: {bestChild.play.column} Visits: {bestChild.visits} W/L/D: {bestChild.losses}/{bestChild.wins}/{bestChild.draws} ({bestChild.losses / Mathf.Max(1, bestChild.wins)})\n{bestChild}");
-            return bestChild.play;
+            return this._root.GetBestChild().Play;
         }
 
-        public static PlayInput GetBestMove(GameSimulation state, int iterations = 10000, float maxTime = 2.5f)
+        public static PlayInput GetBestMove(GameSimulation state, int iterations = 50000, float maxTime = 3f)
         {
-            MCTS instance = new MCTS(state);
-            return instance.GetBestMove(iterations, maxTime);
+            return new MCTS(state).RunMCTS(iterations, maxTime);
         }
     }
 }

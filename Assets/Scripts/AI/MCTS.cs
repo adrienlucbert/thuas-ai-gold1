@@ -116,7 +116,7 @@ namespace Connect4.AI
             return this._root.GetBestChild().Play;
         }
 
-        public static PlayInput GetBestMove(GameSimulation state, int iterations = 50000, float maxTime = 3f)
+        public static PlayInput GetBestMove(GameSimulation state, int iterations = 20000, float maxTime = 3f)
         {
             return new MCTS(state).RunMCTS(iterations, maxTime);
         }

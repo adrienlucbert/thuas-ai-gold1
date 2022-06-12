@@ -13,8 +13,6 @@ namespace Connect4.Game
         public Vector2Int BoardSize = new Vector2Int(7, 6);
         public int WinningCellsInARow = 4;
 
-        public int RandomSeed;
-
         public APlayer Player1;
         public APlayer Player2;
         public APlayer[] Players => new APlayer[] { this.Player1, this.Player2 };
@@ -37,7 +35,6 @@ namespace Connect4.Game
         /// </summary>
         public void StartGame()
         {
-            UnityEngine.Random.InitState(this.RandomSeed);
             Debug.Assert(this.Player1 != null, "Player 1 must be assigned a value");
             Debug.Assert(this.Player2 != null, "Player 2 must be assigned a value");
             GameBoard board = new GameBoard(this.BoardSize.x, this.BoardSize.y);

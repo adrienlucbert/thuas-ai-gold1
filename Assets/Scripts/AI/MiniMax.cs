@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Connect4.Game;
@@ -29,36 +28,28 @@ namespace Connect4.AI
             foreach (PlayInput play in availablePlays)
             {
                 int score = MiniMax.RunMiniMax(state.Next(play), maxDepth - 1, int.MinValue, int.MaxValue, true, ref context);
-                Debug.LogWarning($"Play {play.column} has score {score}");
                 if (!bestScore.HasValue || score > bestScore.Value)
                 {
                     bestMove = play;
                     bestScore = score;
                 }
             }
-            Debug.LogError($"Best move: {bestMove.column} with score {bestScore.Value} ({context.EvaluatedScenarios} scenarios evaluated)");
             return bestMove;
         }
 
         private static int EvaluateState(GameSimulation state, int depth, ref EvaluationContext context)
         {
             context.EvaluatedScenarios++;
-            Func<EvaluationContext, int> scorer = (context) =>
+            if (state.State == GameState.Draw)
+                return 1;
+            if (state.State == GameState.Won)
             {
-                if (state.State == GameState.Draw)
-                    return 1;
-                if (state.State == GameState.Won)
-                {
-                    if (state.Winner.Value == context.Player)
-                        return 2;
-                    else
-                        return -1;
-                }
-                return 0;
-            };
-            int score = scorer(context);
-            Debug.Log($"Score: {score}\n{state}");
-            return score;
+                if (state.Winner.Value == context.Player)
+                    return 2;
+                else
+                    return -1;
+            }
+            return 0;
         }
 
         private static int RunMiniMax(GameSimulation state, int maxDepth, int alpha, int beta, bool lookForMinimum, ref EvaluationContext context)
